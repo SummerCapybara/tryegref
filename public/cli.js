@@ -4,7 +4,28 @@ ws.onopen = () => ws.send("hi");
 var ulist = document.querySelector(".uli");
 var input = document.querySelector("input");
 var btn = document.querySelector(".btn");
+var dbox = document.querySelector(".dbox");
 var isFocused = false;
+var offsetX = 0;
+var offsetY = 0;
+var isDragging = false;
+dbox.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  offsetX = e.clientX - dbox.offsetLeft;
+  offsetY = e.clientY - dbox.offsetTop;
+  dbox.style.cursor = "grabbing";
+});
+document.addEventListener("mousemove", (e) => {
+  if (isDragging) {
+    dbox.style.left = e.clientX - offsetX + "px";
+    dbox.style.top = e.clientY - offsetY + "px";
+    ws.send(`${e.clientX - offsetX}px, ${e.clientY - offsetY}px`);
+  }
+});
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+  dbox.style.cursor = "grab";
+});
 window.addEventListener("focusin", (event) => {
   if (event.target == input) {
     console.log("focus");
@@ -33,9 +54,11 @@ window.addEventListener("keydown", (event) => {
     btn.click();
   }
 });
+window.addEventListener("mousemove", (Event) => {});
 ws.onmessage = (e) => {
-  console.log(e.data);
-  let li = document.createElement("li");
-  li.textContent = e.data;
-  ulist?.appendChild(li);
+  let PositionData = String(e.data).split(",");
+  let [posX, posY] = PositionData;
+  console.log(posX, "|", posY);
+  dbox.style.left = String(posX);
+  dbox.style.top = String(posY);
 };
